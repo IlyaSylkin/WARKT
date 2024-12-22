@@ -2,9 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+
+# Установим текущую рабочую директорию как директорию файла
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 # Чтение данных из файла
-df = pd.read_csv('Data.csv', sep=';')
+try:
+    df = pd.read_csv('Data.csv', sep=';')
+except FileNotFoundError:
+    print("Файл 'Data.csv' не найден.")
+    df = pd.DataFrame(columns=["Time", "Velocity", "AltitudeFromTerrain"])  # Инициализация с пустыми столбцами
 
 # Извлечение данных из таблицы
 Time = df['Time']
@@ -15,8 +22,6 @@ Altitude = df['AltitudeFromTerrain']
 Time_filtered = Time[Time <= 360]
 Velocity_filtered = Velocity[:len(Time_filtered)]
 Altitude_filtered = Altitude[:len(Time_filtered)]
-
-# Модифицированная скорость (делим на 3)
 Velocity_modified = Velocity_filtered / 3
 
 # Вычисление ускорения от скорости
@@ -39,7 +44,6 @@ msuh1 = 38247
 msuh2 = 2243
 m1 = msuh1 + fuel1
 m2 = msuh2 + fuel2
-Mgraph = []
 V = []
 v0 = 0
 
@@ -50,7 +54,6 @@ def Ftyag(m):
 # Моделирование до 360 секунд
 for t in range(1, 150):  # Период с ускорением n1
     m = m0 - n1 * t
-    Mgraph.append(m)
     v1 = (v0 - u * np.log(m / m0) - (G * Mz * np.log(m / m0)) / (6400000**2))
     d = v1 / 1000 * 4
     V.append(d)
@@ -62,7 +65,6 @@ m0 -= fuel1 + msuh1
 
 for t in range(150, 1095):  # Период с ускорением n2
     m = m0 - n2 * t
-    Mgraph.append(m)
     v1 = (v0 - u * np.log(m / m0) - (G * Mz * np.log(m / m0)) / (6400000**2))
     d = v1 / 1000 * 4
     V.append(d)
@@ -75,7 +77,7 @@ m0 -= fuel2 + msuh2
 # Рассчитаем ускорение и высоту на основе модели
 Acc = [0] * len(V)
 T = np.arange(1, len(V) + 1)
-H = [0] * 500
+H = [0] * len(V)
 
 for t in range(len(V)):
     if t < 150:
@@ -84,13 +86,7 @@ for t in range(len(V)):
     else:
         Acc[t] = ((u * n2 * t - Ftyag(m2 - 2281 * 2 * (t + 1))) / m2) / 80
         H[t + 1] = (Acc[t] * ((t + 1)**2)) / 200
-    if t >= 360:
-        break
-
-# Умножаем каждое значение высоты на 11.6
 H = np.array(H) * 11.6
-
-# Умножаем скорость на 8
 V = np.array(V) * 8
 
 # Построение графиков
