@@ -77,7 +77,7 @@ m0 -= fuel2 + msuh2
 # Рассчитаем ускорение и высоту на основе модели
 Acc = [0] * len(V)
 T = np.arange(1, len(V) + 1)
-H = [0] * len(V)
+H = [0] * (len(V) +1)
 
 for t in range(len(V)):
     if t < 150:
@@ -91,7 +91,7 @@ V = np.array(V) * 8
 
 # Построение графиков
 plt.plot(Time_filtered, Altitude_filtered, label="Высота (KSP)", color="blue")
-plt.plot(T[:len(V)], H[:len(V)], label="Высота (Модель)", color="red", linestyle='--')
+plt.plot(T[:len(V)], H[:len(V)] , label="Высота (Модель)", color="red", linestyle='--')
 
 plt.title("Сравнение высоты от времени")
 plt.xlabel("Время (с)")
